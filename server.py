@@ -316,9 +316,22 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(static_dir, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
+from fastapi.responses import HTMLResponse
+
 @app.get("/")
 def root():
-    return FileResponse(os.path.join(static_dir, "index.html"))
+    paths_to_check = [
+        os.path.join(static_dir, "index.html"),
+        os.path.join(os.path.dirname(__file__), "static", "index.html"),
+        os.path.join(os.path.dirname(__file__), "index.html"),
+        "static/index.html",
+        "index.html",
+    ]
+    for p in paths_to_check:
+        if os.path.exists(p):
+            with open(p, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h2>Skyler BI Server Running</h2><p>Please ensure static/index.html is uploaded.</p>")
 
 if __name__ == "__main__":
     import uvicorn
