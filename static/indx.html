@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Skyler BI — Skylark Drones Executive Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root {
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-glow: rgba(37, 99, 235, 0.28);
+  --bg: #F0F4F8;
+  --sidebar-bg: #101726;
+  --sidebar-card: #182234;
+  --card-bg: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --accent-green: #10B981;
+  --accent-amber: #F59E0B;
+  --accent-purple: #8B5CF6;
+  --accent-red: #EF4444;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-main);display:flex;height:100vh;overflow:hidden;position:relative}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;height:100vh;overflow-y:auto;flex-shrink:0;z-index:20;border-right:1px solid #1E293B}
+.sidebar-logo{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.sidebar-logo-title{font-size:17px;font-weight:800;color:#F1F5F9;display:flex;align-items:center;gap:8px}
+.sidebar-logo-sub{font-size:11px;color:#64748B;margin-top:3px}
+.sidebar-new{padding:14px 14px 8px}
+.btn-new{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px 0;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s ease;box-shadow:0 2px 6px rgba(37,99,235,0.3)}
+.btn-new:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 10px rgba(37,99,235,0.4)}
+.btn-new:active{transform:translateY(0)}
+.sidebar-nav{padding:6px 10px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:#8899BB;margin:3px 0;transition:all .2s ease;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:#CBD5E1;transform:translateX(2px)}
+.nav-item.active{background:#2563EB;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.3)}
+.nav-item .nav-icon{font-size:15px;width:18px;text-align:center}
+.sidebar-bottom{padding:12px 14px;border-top:1px solid rgba(255,255,255,0.06)}
+.live-dot{font-size:10px;color:#64748B;padding:6px 10px;display:flex;align-items:center;gap:6px}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;z-index:10}
+.topbar-brand{font-size:16px;font-weight:800;color:#111827;letter-spacing:-0.2px}
+
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* PAGES */
+.page{display:none;animation:pageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)}
+.page.active{display:block}
+@keyframes pageFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI ROW */
+.kpi-row{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.kpi-card{background:#fff;border-radius:12px;padding:18px 20px;flex:1;min-width:150px;box-shadow:0 1px 3px rgba(0,0,0,0.06);border-top:4px solid #2563EB;transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1)}
+.kpi-card:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,0.08)}
+.kpi-card.green{border-top-color:#16a34a}
+.kpi-card.amber{border-top-color:#d97706}
+.kpi-card.red{border-top-color:#dc2626}
+.kpi-card.purple{border-top-color:#7c3aed}
+.kpi-label{font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:800;color:#111827;letter-spacing:-.5px;line-height:1.1}
+.kpi-sub{font-size:11px;color:#9CA3AF;margin-top:5px}
+
+/* PAGE TITLES */
+.page-title{font-size:26px;font-weight:800;color:#111827;margin-bottom:4px;letter-spacing:-0.4px}
+.page-sub{font-size:13px;color:#6B7280;margin-bottom:20px}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:#D1FAE5;color:#065F46;font-size:10px;font-weight:800;padding:3px 10px;border-radius:99px;margin-left:10px;vertical-align:middle;letter-spacing:.05em}
+.live-dot-anim{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.2)}}
+
+/* FILTERS ROW */
+.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.filter-select{padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:#374151;background:#fff;cursor:pointer;outline:none;transition:border-color 0.15s ease, box-shadow 0.15s ease}
+.filter-select:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+
+/* TABLES */
+.table-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden}
+.table-header-row{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #E5E7EB}
+.table-header-title{font-size:15px;font-weight:700;color:#111827}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #E5E7EB;background:#F9FAFB}
+.data-table td{padding:12px 16px;font-size:13px;color:#374151;border-bottom:1px solid #F3F4F6;vertical-align:middle;transition:background 0.15s ease}
+.data-table tbody tr{cursor:pointer;transition:all 0.15s ease}
+.data-table tbody tr:hover td{background:#F0F7FF}
+.deal-name{font-weight:600;color:#2563EB;font-size:13px}
+.deal-sub{font-size:11px;color:#9CA3AF;margin-top:2px}
+.val-right{text-align:right}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:#D1FAE5;color:#065F46}
+.badge-blue{background:#DBEAFE;color:#1e40af}
+.badge-amber{background:#FEF3C7;color:#92400e}
+.badge-red{background:#FEE2E2;color:#991b1b}
+.badge-purple{background:#EDE9FE;color:#5b21b6}
+.badge-orange{background:#FFEDD5;color:#9a3412}
+.badge-gray{background:#F3F4F6;color:#374151}
+
+/* PROB BAR WITH SPRING PHYSICS */
+.prob-wrap{display:flex;align-items:center;gap:8px}
+.prob-bar-bg{flex:1;height:5px;background:#E5E7EB;border-radius:3px;overflow:hidden;min-width:60px}
+.prob-bar-fill{height:100%;border-radius:3px;width:0%;transition:width 0.85s cubic-bezier(0.34, 1.56, 0.64, 1)}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #E5E7EB}
+.pagination-info{font-size:13px;color:#6B7280}
+.pagination-btns{display:flex;gap:8px}
+.page-btn{padding:6px 14px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;color:#374151;transition:all .15s}
+.page-btn:hover:not(:disabled){background:#F9FAFB;border-color:#2563EB;color:#2563EB}
+.page-btn:disabled{opacity:.4;cursor:default}
+
+/* CHAT */
+.chat-area{max-width:720px;margin:0 auto;display:flex;flex-direction:column;height:calc(100vh - 56px - 84px);overflow-y:auto;padding-bottom:24px;scroll-behavior:smooth}
+.chat-date{text-align:center;font-size:12px;color:#9CA3AF;margin:16px 0 12px}
+.chat-bubble-user{display:flex;justify-content:flex-end;margin:8px 0;animation:msgInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)}
+.chat-bubble-user .bubble{background:#2563EB;color:#fff;padding:11px 18px;border-radius:20px 20px 4px 20px;max-width:75%;font-size:14px;line-height:1.5;box-shadow:0 2px 6px rgba(37,99,235,0.25)}
+.chat-bubble-ai{display:flex;align-items:flex-start;gap:12px;margin:12px 0;animation:msgInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1)}
+@keyframes msgInRight{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes msgInLeft{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.ai-avatar{width:34px;height:34px;border-radius:50%;background:#1a2332;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px;box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+.ai-content{flex:1;max-width:88%}
+.ai-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-top:4px}
+.ai-text{font-size:14px;line-height:1.7;color:#374151}
+.ai-text strong{font-weight:700;color:#111827}
+.ai-text ul{padding-left:20px;margin:8px 0}
+.ai-text li{margin:4px 0}
+.ai-text h2,.ai-text h3{font-size:15px;font-weight:700;color:#111827;margin:14px 0 6px}
+
+/* SPARK CURSOR */
+.spark-cursor{display:inline-block;animation:sparkle 0.6s infinite alternate;margin-left:3px;font-size:13px;vertical-align:baseline}
+@keyframes sparkle{0%{opacity:0.3;transform:scale(0.85)}100%{opacity:1;transform:scale(1.2)}}
+
+/* FOLLOW-UP CHIPS */
+.followup-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;animation:pageFadeIn 0.4s ease}
+.chip-btn{padding:7px 13px;border-radius:99px;background:#F0F4F8;border:1px solid #E2E8F0;font-size:12px;font-weight:600;color:#2563EB;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s ease;display:flex;align-items:center;gap:5px}
+.chip-btn:hover{background:#2563EB;color:#fff;border-color:#2563EB;transform:translateY(-1px);box-shadow:0 3px 8px rgba(37,99,235,0.25)}
+
+/* SHIMMER SKELETON LOADER */
+.skeleton-wrap{display:flex;flex-direction:column;gap:10px;width:100%}
+.shimmer{background:linear-gradient(90deg, #f0f3f6 25%, #e2e8f0 50%, #f0f3f6 75%);background-size:200% 100%;animation:shimmerAnim 1.4s infinite;border-radius:6px}
+@keyframes shimmerAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.shimmer-line{height:14px;width:100%}
+.shimmer-line.short{width:60%}
+.shimmer-card{height:70px;width:100%;border-radius:10px}
+
+/* TOAST */
+.toast-msg{position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,0.2);display:flex;align-items:center;gap:8px;z-index:100;animation:toastIn 0.3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.chat-actions{display:flex;gap:16px;margin-top:10px}
+.chat-action-btn{font-size:12px;color:#9CA3AF;cursor:pointer;display:flex;align-items:center;gap:4px;border:none;background:none;font-family:'Inter',sans-serif;transition:color 0.15s ease}
+.chat-action-btn:hover{color:#2563EB}
+
+.chat-input-bar{position:fixed;bottom:0;left:220px;right:0;background:#fff;border-top:1px solid #E5E7EB;padding:14px 24px;z-index:10}
+.chat-input-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:8px 12px;transition:all 0.2s ease}
+.chat-input-inner:focus-within{border-color:#2563EB;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.chat-input-inner input{flex:1;border:none;background:none;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:#111827}
+.chat-input-inner input::placeholder{color:#9CA3AF}
+.btn-send{width:34px;height:34px;border-radius:50%;background:#2563EB;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s ease;flex-shrink:0}
+.btn-send:hover{background:#1d4ed8;transform:scale(1.05)}
+.chat-disclaimer{text-align:center;font-size:11px;color:#9CA3AF;margin-top:6px;max-width:720px;margin-left:auto;margin-right:auto}
+.suggested-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:720px;margin:24px auto}
+.suggested-btn{padding:14px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;text-align:left;cursor:pointer;font-size:13px;color:#374151;font-family:'Inter',sans-serif;transition:all .2s ease;line-height:1.4;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.suggested-btn:hover{border-color:#2563EB;color:#2563EB;background:#EFF6FF;transform:translateY(-2px);box-shadow:0 4px 10px rgba(37,99,235,0.12)}
+.suggested-icon{font-size:16px;margin-bottom:6px;display:block}
+
+/* LEADERSHIP */
+.lead-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.lead-cols{display:flex;gap:20px;margin-top:16px}
+.lead-left{flex:1.6}
+.lead-right{flex:1;display:flex;flex-direction:column;gap:14px}
+.white-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:16px}
+.white-card-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.ai-insight-card{background:#EFF6FF;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:box-shadow 0.3s ease}
+.ai-insight-head{background:#2563EB;padding:12px 16px;font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px}
+.ai-insight-body{padding:16px;font-size:13.5px;line-height:1.65;color:#1E3A5F}
+.ai-insight-title{font-weight:700;font-size:14px;color:#111827;margin-bottom:6px}
+.metric-card{background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;gap:4px;transition:all 0.2s ease}
+.metric-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.metric-card-label{font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em}
+.metric-card-value{font-size:24px;font-weight:800;color:#111827}
+.metric-card-tag{font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.metric-green{color:#16a34a}
+.metric-amber{color:#d97706}
+.metric-gray{color:#9CA3AF}
+.top-sec-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#F9FAFB;border-radius:8px;margin-bottom:6px;font-size:12px;transition:background 0.15s ease}
+.top-sec-item:hover{background:#EFF6FF}
+.top-sec-name{font-weight:600;color:#111827}
+.top-sec-val{font-weight:700;color:#2563EB}
+.btn-generate{padding:11px 22px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s ease;display:flex;align-items:center;gap:8px;margin-bottom:14px;box-shadow:0 2px 6px rgba(37,99,235,0.3)}
+.btn-generate:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.4)}
+.loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chart-container{width:100%;min-height:300px}
+
+/* SLIDE-OVER DRAWER */
+.drawer-backdrop{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.4);z-index:50;opacity:0;pointer-events:none;transition:opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);backdrop-filter:blur(2px)}
+.drawer-backdrop.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;width:440px;height:100vh;background:#fff;z-index:51;box-shadow:-6px 0 24px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{padding:20px 24px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;background:#F9FAFB}
+.drawer-title{font-size:16px;font-weight:800;color:#111827}
+.drawer-close{width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#6B7280;transition:all 0.15s ease}
+.drawer-close:hover{background:#F3F4F6;color:#111827}
+.drawer-body{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px}
+.drawer-section{background:#F9FAFB;border-radius:10px;padding:16px}
+.drawer-sec-title{font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drawer-field-label{font-size:11px;color:#6B7280;margin-bottom:3px}
+.drawer-field-val{font-size:13.5px;font-weight:600;color:#111827}
+
+/* STATS HEADER */
+.deals-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.deals-stats-right{display:flex;gap:24px}
+.deals-stat{text-align:right}
+.deals-stat-label{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.07em}
+.deals-stat-value{font-size:18px;font-weight:800;color:#2563EB}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-title">&#x1F681; Skyler AI</div>
+    <div class="sidebar-logo-sub">Business Intelligence</div>
+  </div>
+  <div class="sidebar-new">
+    <button class="btn-new" onclick="newAnalysis()">&#xff0b; New Analysis</button>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-page="chat" onclick="navigate('chat')">
+      <span class="nav-icon">&#x1F4AC;</span> Chat
+    </button>
+    <button class="nav-item" data-page="deals" onclick="navigate('deals')">
+      <span class="nav-icon">&#x1F4CB;</span> Deals Board
+    </button>
+    <button class="nav-item" data-page="wo" onclick="navigate('wo')">
+      <span class="nav-icon">&#x2699;&#xFE0F;</span> Work Orders
+    </button>
+    <button class="nav-item" data-page="leadership" onclick="navigate('leadership')">
+      <span class="nav-icon">&#x1F454;</span> Leadership
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="live-dot">&#x1F534; Live &middot; Monday.com</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar" id="topbar">
+    <div class="topbar-brand">Skyler BI</div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="content" id="content">
+
+    <!-- CHAT PAGE -->
+    <div id="page-chat" class="page active" style="padding:0;height:100%">
+      <div class="chat-area" id="chat-messages">
+        <div class="chat-date" id="chat-date"></div>
+        <div id="chat-suggested">
+          <div class="suggested-grid">
+            <button class="suggested-btn" onclick="sendSuggested('How is the Mining pipeline looking?')">
+              <span class="suggested-icon">&#x1F4CA;</span>Mining pipeline overview
+            </button>
+            <button class="suggested-btn" onclick="sendSuggested('Revenue summary across all sectors')">
+              <span class="suggested-icon">&#x1F4B0;</span>Revenue across sectors
+            </button>
+            <button class="suggested-btn" onclick="sendSuggested('Give me details about ongoing projects with billing issues')">
+              <span class="suggested-icon">&#x2699;&#xFE0F;</span>Projects with billing issues
+            </button>
+            <button class="suggested-btn" onclick="sendSuggested('Which sector has the most won deals?')">
+              <span class="suggested-icon">&#x1F3C6;</span>Top sector by won deals
+            </button>
+            <button class="suggested-btn" onclick="sendSuggested('Prepare a leadership briefing')">
+              <span class="suggested-icon">&#x1F4CB;</span>Leadership briefing
+            </button>
+            <button class="suggested-btn" onclick="sendSuggested('Show me high probability open deals')">
+              <span class="suggested-icon">&#x1F50D;</span>High probability deals
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <div class="chat-input-inner">
+          <span style="color:#9CA3AF;font-size:16px;cursor:pointer">&#x1F4CE;</span>
+          <input id="chat-input" type="text" placeholder="Ask Skyler a business question..." onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="btn-send" onclick="sendChat()">&#x27A4;</button>
+        </div>
+        <div class="chat-disclaimer">Skyler can make mistakes. Verify critical business data.</div>
+      </div>
+    </div>
+
+    <!-- DEALS PAGE -->
+    <div id="page-deals" class="page">
+      <div class="deals-header">
+        <div>
+          <div class="page-title">
+            Deals Board
+            <span class="live-badge"><span class="live-dot-anim"></span>SYNCING LIVE</span>
+          </div>
+          <div class="page-sub" id="deals-sub">Loading pipeline records...</div>
+        </div>
+        <div class="deals-stats-right" id="deals-stats-right"></div>
+      </div>
+      <div class="kpi-row" id="deals-kpis"></div>
+      <div class="filter-row">
+        <select class="filter-select" id="deals-sector-filter" onchange="applyDealsFilter()">
+          <option value="">Sector: All</option>
+        </select>
+        <select class="filter-select" id="deals-stage-filter" onchange="applyDealsFilter()">
+          <option value="">Stage: All</option>
+        </select>
+        <select class="filter-select" id="deals-status-filter" onchange="applyDealsFilter()">
+          <option value="">Status: All</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="deals-table">
+            <thead>
+              <tr>
+                <th>Deal Name</th>
+                <th>Client Code</th>
+                <th>Sector</th>
+                <th>Deal Stage</th>
+                <th>Status</th>
+                <th class="val-right">Value (&#x20B9;)</th>
+                <th>Probability</th>
+              </tr>
+            </thead>
+            <tbody id="deals-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="deals-pagination"></div>
+      </div>
+    </div>
+
+    <!-- WORK ORDERS PAGE -->
+    <div id="page-wo" class="page">
+      <div class="deals-header" style="margin-bottom:4px">
+        <div>
+          <div class="page-title">Work Orders Board
+            <span class="live-badge"><span class="live-dot-anim"></span>SYNCING LIVE</span>
+          </div>
+          <div class="page-sub" id="wo-sub">Loading work orders...</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;margin-left:auto">
+          <select class="filter-select" id="wo-sector-filter" onchange="applyWoFilter()">
+            <option value="">Filter by Sector</option>
+          </select>
+        </div>
+      </div>
+      <div class="kpi-row" id="wo-kpis"></div>
+      <div class="filter-row">
+        <select class="filter-select" id="wo-exec-filter" onchange="applyWoFilter()">
+          <option value="">Execution Status: All</option>
+        </select>
+        <select class="filter-select" id="wo-nature-filter" onchange="applyWoFilter()">
+          <option value="">Nature of Work: All</option>
+        </select>
+      </div>
+      <div class="table-card">
+        <div class="table-header-row">
+          <div class="table-header-title">Active Projects</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="wo-table">
+            <thead>
+              <tr>
+                <th>Project Name &amp; ID</th>
+                <th>Client Code</th>
+                <th>Sector</th>
+                <th>Nature</th>
+                <th>Execution Status</th>
+                <th>Invoice Status</th>
+                <th class="val-right">Contract Value</th>
+                <th class="val-right">Receivable</th>
+              </tr>
+            </thead>
+            <tbody id="wo-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="wo-pagination"></div>
+      </div>
+    </div>
+
+    <!-- LEADERSHIP PAGE -->
+    <div id="page-leadership" class="page">
+      <div class="lead-header">
+        <div>
+          <div class="page-title">Executive Briefing</div>
+          <div class="page-sub">Sector Performance &amp; Business Intelligence Summary</div>
+        </div>
+      </div>
+      <div class="kpi-row" id="lead-kpis"></div>
+      <div class="lead-cols">
+        <div class="lead-left">
+          <div class="white-card">
+            <div class="white-card-title">&#x1F4CA; Sector Performance &mdash; Deals vs Work Orders (Click any bar to drill down)</div>
+            <div id="cross-chart" class="chart-container"></div>
+          </div>
+          <div id="lead-briefing-area">
+            <button class="btn-generate" onclick="generateBriefing()">
+              <span id="gen-btn-text">&#x1F504; Generate AI Briefing</span>
+            </button>
+          </div>
+        </div>
+        <div class="lead-right">
+          <div id="lead-insight-card">
+            <div class="ai-insight-card">
+              <div class="ai-insight-head">&#x1F916; AI Operational Insight</div>
+              <div class="ai-insight-body">
+                <div class="ai-insight-title">Synthesize Live Intelligence</div>
+                <p style="color:#6B7280;font-size:13px">Gemini will analyze live cross-board Monday.com data to generate executive-ready takeaways.</p>
+              </div>
+            </div>
+          </div>
+          <div id="lead-top-sectors"></div>
+          <div id="lead-metric-cards"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- SLIDE-OVER DETAIL INSPECTOR DRAWER -->
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="slide-drawer">
+  <div class="drawer-header">
+    <div class="drawer-title" id="drawer-title">Record Details</div>
+    <div class="drawer-close" onclick="closeDrawer()">&#x2715;</div>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentPage = 'chat';
+let chatSessionId = '';
+let dealsData = null, dealsPage = 1, dealsPerPage = 10;
+let woData = null, woPage = 1, woPerPage = 10;
+let leadSessionId = '';
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (page === 'deals' && !dealsData) loadDeals();
+  if (page === 'wo'    && !woData)    loadWo();
+  if (page === 'leadership')           loadLeadership();
+}
+
+function newAnalysis() {
+  chatSessionId = '';
+  document.getElementById('chat-messages').innerHTML = '<div class="chat-date" id="chat-date"></div>';
+  document.getElementById('chat-messages').insertAdjacentHTML('beforeend', suggestedHTML());
+  navigate('chat');
+  showToast('Started new analysis session');
+}
+
+function suggestedHTML() {
+  const prompts = [
+    ['&#x1F4CA;','Mining pipeline overview','How is the Mining pipeline looking?'],
+    ['&#x1F4B0;','Revenue across sectors','Revenue summary across all sectors'],
+    ['&#x2699;','Projects with billing issues','Give me details about ongoing projects with billing issues'],
+    ['&#x1F3C6;','Top sector by won deals','Which sector has the most won deals?'],
+    ['&#x1F4CB;','Leadership briefing','Prepare a leadership briefing'],
+    ['&#x1F50D;','High probability deals','Show me high probability open deals'],
+  ];
+  return `<div class="suggested-grid" id="chat-suggested">${prompts.map(([icon,label,q])=>
+    `<button class="suggested-btn" onclick="sendSuggested(\`${q}\`)">`+
+    `<span class="suggested-icon">${icon}</span>${label}</button>`).join('')}</div>`;
+}
+
+// ── Particle Confetti Celebration ─────────────────────────────────────────────
+function fireConfetti() {
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6']
+    });
+  }
+}
+
+// ── Toast Notification ────────────────────────────────────────────────────────
+function showToast(msg) {
+  const existing = document.querySelector('.toast-msg');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  toast.innerHTML = `<span>&#x2713;</span> ${msg}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2600);
+}
+
+// ── Smooth 60fps Number Counter ───────────────────────────────────────────────
+function animateCount(elem, endVal, prefix='₹', suffix='', duration=650) {
+  if (!elem) return;
+  const start = 0;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const current = start + (endVal - start) * easeOut;
+    
+    if (suffix === ' Cr') {
+      elem.textContent = `${prefix}${(current/1e7).toFixed(2)}${suffix}`;
+    } else if (suffix === ' L') {
+      elem.textContent = `${prefix}${(current/1e5).toFixed(1)}${suffix}`;
+    } else if (prefix === '₹') {
+      elem.textContent = `${prefix}${Math.round(current).toLocaleString('en-IN')}`;
+    } else {
+      elem.textContent = `${Math.round(current)}${suffix}`;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  requestAnimationFrame(update);
+}
+
+// ── INR Formatter ─────────────────────────────────────────────────────────────
+function fmtInr(val) {
+  if (val === null || val === undefined || val === '') return '—';
+  const n = parseFloat(val);
+  if (isNaN(n)) return '—';
+  if (n >= 1e7) return '\u20b9' + (n/1e7).toFixed(2) + ' Cr';
+  if (n >= 1e5) return '\u20b9' + (n/1e5).toFixed(1) + ' L';
+  return '\u20b9' + n.toLocaleString('en-IN', {maximumFractionDigits:0});
+}
+
+function kpiCard(id, label, value, sub, color='') {
+  return `<div class="kpi-card ${color}">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value" id="${id}">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+const sectorClass = {Mining:'badge-amber',Renewables:'badge-green',Railways:'badge-blue',
+  Powerline:'badge-purple',Construction:'badge-orange',Others:'badge-gray'};
+
+function sectorBadge(s) {
+  if (!s) return '';
+  return `<span class="badge ${sectorClass[s]||'badge-gray'}">${s}</span>`;
+}
+
+function execBadge(s) {
+  if (!s) return '<span class="badge badge-gray">—</span>';
+  const cls = {Completed:'badge-green',Ongoing:'badge-blue','Not Started':'badge-gray',
+    Paused:'badge-amber','Partially Completed':'badge-orange'};
+  return `<span class="badge ${cls[s]||'badge-gray'}">${s}</span>`;
+}
+
+function invoiceBadge(s) {
+  if (!s) return '<span class="badge badge-gray">—</span>';
+  const cls = {'Fully Billed':'badge-green','Partially Billed':'badge-blue',
+    'Not Billed':'badge-red',Stuck:'badge-red'};
+  return `<span class="badge ${cls[s]||'badge-gray'}">${s}</span>`;
+}
+
+function probBar(p, index) {
+  if (!p) return '<span class="badge badge-gray">Not Set</span>';
+  const cfg = {High:['badge-green',85,'#16a34a'],Medium:['badge-amber',50,'#d97706'],Low:['badge-red',25,'#dc2626']};
+  const [bcls, w, col] = cfg[p] || ['badge-gray',0,'#9CA3AF'];
+  return `<div class="prob-wrap"><span class="badge ${bcls}">${p}</span>
+    <div class="prob-bar-bg"><div class="prob-bar-fill" id="prob-fill-${index}" data-width="${w}" style="background:${col}"></div></div></div>`;
+}
+
+function triggerProgressBars() {
+  setTimeout(() => {
+    document.querySelectorAll('.prob-bar-fill').forEach(bar => {
+      bar.style.width = (bar.dataset.width || 0) + '%';
+    });
+  }, 40);
+}
+
+function statusBadge(s) {
+  const cls = {Open:'badge-blue',Won:'badge-green',Dead:'badge-red','On Hold':'badge-amber'};
+  return `<span class="badge ${cls[s]||'badge-gray'}">${s||'—'}</span>`;
+}
+
+// ── Skeletons ─────────────────────────────────────────────────────────────────
+function tableSkeleton(rows=6, cols=7) {
+  let html = '';
+  for(let i=0; i<rows; i++) {
+    html += '<tr>';
+    for(let j=0; j<cols; j++) {
+      html += `<td><div class="shimmer shimmer-line ${j===0?'':'short'}"></div></td>`;
+    }
+    html += '</tr>';
+  }
+  return html;
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function paginate(total, page, perPage, containerId, onChangeFn) {
+  const el = document.getElementById(containerId);
+  const totalPages = Math.ceil(total / perPage);
+  const from = Math.min((page-1)*perPage+1, total);
+  const to   = Math.min(page*perPage, total);
+  el.innerHTML = `
+    <div class="pagination-info">Showing ${from} to ${to} of ${total} records</div>
+    <div class="pagination-btns">
+      <button class="page-btn" ${page<=1?'disabled':''} onclick="${onChangeFn}(${page-1})">Previous</button>
+      <button class="page-btn" ${page>=totalPages?'disabled':''} onclick="${onChangeFn}(${page+1})">Next</button>
+    </div>`;
+}
+
+// ── Slide-Over Inspector Drawer ───────────────────────────────────────────────
+function openDrawer(title, contentHtml) {
+  document.getElementById('drawer-title').textContent = title;
+  document.getElementById('drawer-body').innerHTML = contentHtml;
+  document.getElementById('drawer-backdrop').classList.add('open');
+  document.getElementById('slide-drawer').classList.add('open');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-backdrop').classList.remove('open');
+  document.getElementById('slide-drawer').classList.remove('open');
+}
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
+function showDealDrawer(idx) {
+  if (!dealsData || !dealsData.records[idx]) return;
+  const r = dealsData.records[idx];
+  if (r['Deal Status'] === 'Won') {
+    fireConfetti();
+  }
+  const html = `
+    <div class="drawer-section">
+      <div class="drawer-sec-title">Deal Overview</div>
+      <div style="font-size:18px;font-weight:800;color:#2563EB;margin-bottom:6px">${r['Deal Name']||'—'}</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        ${sectorBadge(r['Sector'])}
+        ${statusBadge(r['Deal Status'])}
+      </div>
+      <div class="drawer-grid">
+        <div><div class="drawer-field-label">Client Code</div><div class="drawer-field-val">${r['Client Code']||'—'}</div></div>
+        <div><div class="drawer-field-label">Owner Code</div><div class="drawer-field-val">${r['Owner code']||'—'}</div></div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">Financials &amp; Probability</div>
+      <div class="drawer-grid">
+        <div><div class="drawer-field-label">Masked Deal Value</div><div class="drawer-field-val" style="font-size:16px;color:#16a34a">${fmtInr(r['Masked Deal value'])}</div></div>
+        <div><div class="drawer-field-label">Closure Probability</div><div class="drawer-field-val">${r['Closure Probability']||'—'}</div></div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">Timeline &amp; Details</div>
+      <div class="drawer-grid">
+        <div><div class="drawer-field-label">Deal Stage</div><div class="drawer-field-val">${r['Deal Stage']||'—'}</div></div>
+        <div><div class="drawer-field-label">Product / Service</div><div class="drawer-field-val">${r['Product deal']||'—'}</div></div>
+        <div><div class="drawer-field-label">Tentative Close Date</div><div class="drawer-field-val">${r['Tentative Close Date']||'—'}</div></div>
+      </div>
+    </div>`;
+  openDrawer('Deal Details', html);
+}
+
+function showWoDrawer(idx) {
+  if (!woData || !woData.records[idx]) return;
+  const r = woData.records[idx];
+  const html = `
+    <div class="drawer-section">
+      <div class="drawer-sec-title">Project Overview</div>
+      <div style="font-size:18px;font-weight:800;color:#2563EB;margin-bottom:4px">${r['Deal name masked']||'—'}</div>
+      <div style="font-size:12px;color:#6B7280;margin-bottom:12px">Serial #: ${r['Serial #']||'—'}</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        ${sectorBadge(r['Sector'])}
+        ${execBadge(r['Execution Status'])}
+        ${invoiceBadge(r['Invoice Status'])}
+      </div>
+      <div class="drawer-grid">
+        <div><div class="drawer-field-label">Customer Code</div><div class="drawer-field-val">${r['Customer Name Code']||'—'}</div></div>
+        <div><div class="drawer-field-label">Nature of Work</div><div class="drawer-field-val">${r['Nature of Work']||'—'}</div></div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">Financial Breakdown</div>
+      <div class="drawer-grid">
+        <div><div class="drawer-field-label">Contract Value</div><div class="drawer-field-val" style="font-size:15px;color:#2563EB">${fmtInr(r[AMT_COL])}</div></div>
+        <div><div class="drawer-field-label">Amount Receivable</div><div class="drawer-field-val" style="font-size:15px;color:#dc2626">${fmtInr(r[RECV_COL])}</div></div>
+        <div><div class="drawer-field-label">Amount to be Billed</div><div class="drawer-field-val">${fmtInr(r[TBIL_COL])}</div></div>
+        <div><div class="drawer-field-label">Billing Status</div><div class="drawer-field-val">${r['Billing Status']||'—'}</div></div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">Timeline</div>
+      <div class="drawer-grid">
+        <div><div class="drawer-field-label">Probable Start Date</div><div class="drawer-field-val">${r['Probable Start Date']||'—'}</div></div>
+        <div><div class="drawer-field-label">Probable End Date</div><div class="drawer-field-val">${r['Probable End Date']||'—'}</div></div>
+      </div>
+    </div>`;
+  openDrawer('Work Order Details', html);
+}
+
+// ── DEALS ─────────────────────────────────────────────────────────────────────
+async function loadDeals(sector='', stage='', status='') {
+  document.getElementById('deals-tbody').innerHTML = tableSkeleton(8, 7);
+  try {
+    const params = new URLSearchParams({sector, stage, status});
+    const res = await fetch('/api/deals?' + params);
+    dealsData = await res.json();
+    dealsPage = 1;
+    renderDeals();
+    populateDealsFilters(dealsData.filters);
+  } catch(e) {
+    document.getElementById('deals-tbody').innerHTML =
+      `<tr><td colspan="7" style="text-align:center;padding:40px;color:#dc2626">Error loading deals: ${e.message}</td></tr>`;
+  }
+}
+
+function populateDealsFilters(filters) {
+  if (!filters) return;
+  const ss = document.getElementById('deals-sector-filter');
+  const sg = document.getElementById('deals-stage-filter');
+  const st = document.getElementById('deals-status-filter');
+  if (ss.options.length <= 1 && filters.sectors) {
+    filters.sectors.forEach(s => ss.add(new Option(s, s)));
+  }
+  if (sg.options.length <= 1 && filters.stages) {
+    filters.stages.forEach(s => sg.add(new Option(s, s)));
+  }
+  if (st.options.length <= 1 && filters.statuses) {
+    filters.statuses.forEach(s => st.add(new Option(s, s)));
+  }
+}
+
+function applyDealsFilter() {
+  const sector = document.getElementById('deals-sector-filter').value;
+  const stage  = document.getElementById('deals-stage-filter').value;
+  const status = document.getElementById('deals-status-filter').value;
+  loadDeals(sector, stage, status);
+}
+
+function renderDeals() {
+  if (!dealsData) return;
+  const { summary, records, total, board_total } = dealsData;
+  document.getElementById('deals-sub').textContent = `${board_total} Active Pipeline Records`;
+  document.getElementById('deals-stats-right').innerHTML = `
+    <div class="deals-stat">
+      <div class="deals-stat-label">Total Pipeline</div>
+      <div class="deals-stat-value" id="d-stat-val">${summary.total_value_fmt}</div>
+    </div>
+    <div class="deals-stat">
+      <div class="deals-stat-label">Open Deals</div>
+      <div class="deals-stat-value" id="d-stat-open">${summary.open}</div>
+    </div>`;
+
+  document.getElementById('deals-kpis').innerHTML =
+    kpiCard('kpi-d-tot', 'Total Pipeline Value', '0', `${summary.null_values||0} records had no value`) +
+    kpiCard('kpi-d-opn', 'Open Deals', '0', 'Active in pipeline') +
+    kpiCard('kpi-d-won', 'Won Deals', '0', 'Successfully closed', 'green') +
+    kpiCard('kpi-d-ded', 'Dead Deals', '0', 'Lost / dropped', 'red');
+
+  animateCount(document.getElementById('kpi-d-tot'), summary.total_value, '₹', summary.total_value >= 1e7 ? ' Cr' : ' L');
+  animateCount(document.getElementById('kpi-d-opn'), summary.open, '', '');
+  animateCount(document.getElementById('kpi-d-won'), summary.won, '', '');
+  animateCount(document.getElementById('kpi-d-ded'), summary.dead, '', '');
+
+  const start = (dealsPage-1)*dealsPerPage;
+  const pageRecs = records.slice(start, start+dealsPerPage);
+  document.getElementById('deals-tbody').innerHTML = pageRecs.map((r, i) => `
+    <tr onclick="showDealDrawer(${start + i})" title="Click to view details">
+      <td><div class="deal-name">${r['Deal Name']||'—'}</div></td>
+      <td><span style="font-size:12px;color:#6B7280">${r['Client Code']||'—'}</span></td>
+      <td>${sectorBadge(r['Sector'])}</td>
+      <td style="font-size:12px">${r['Deal Stage']||'—'}</td>
+      <td>${statusBadge(r['Deal Status'])}</td>
+      <td class="val-right" style="font-weight:600">${fmtInr(r['Masked Deal value'])}</td>
+      <td>${probBar(r['Closure Probability'], i)}</td>
+    </tr>`).join('');
+  
+  triggerProgressBars();
+  paginate(records.length, dealsPage, dealsPerPage, 'deals-pagination', 'setDealsPage');
+}
+
+function setDealsPage(p) { dealsPage = p; renderDeals(); }
+
+// ── WORK ORDERS ───────────────────────────────────────────────────────────────
+const AMT_COL  = 'Amount in Rupees (Excl of GST) (Masked)';
+const RECV_COL = 'Amount Receivable (Masked)';
+const TBIL_COL = 'Amount to be billed in Rs. (Exl. of GST) (Masked)';
+
+async function loadWo(sector='', exec_status='', nature='') {
+  document.getElementById('wo-tbody').innerHTML = tableSkeleton(8, 8);
+  try {
+    const params = new URLSearchParams({sector, exec_status, nature});
+    const res = await fetch('/api/work_orders?' + params);
+    woData = await res.json();
+    woPage = 1;
+    renderWo();
+    populateWoFilters(woData.filters);
+  } catch(e) {
+    document.getElementById('wo-tbody').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;padding:40px;color:#dc2626">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function populateWoFilters(filters) {
+  if (!filters) return;
+  const ss = document.getElementById('wo-sector-filter');
+  const es = document.getElementById('wo-exec-filter');
+  const ns = document.getElementById('wo-nature-filter');
+  if (ss.options.length <= 1 && filters.sectors)       filters.sectors.forEach(s => ss.add(new Option(s,s)));
+  if (es.options.length <= 1 && filters.exec_statuses) filters.exec_statuses.forEach(s => es.add(new Option(s,s)));
+  if (ns.options.length <= 1 && filters.natures)       filters.natures.forEach(s => ns.add(new Option(s,s)));
+}
+
+function applyWoFilter() {
+  const sector      = document.getElementById('wo-sector-filter').value;
+  const exec_status = document.getElementById('wo-exec-filter').value;
+  const nature      = document.getElementById('wo-nature-filter').value;
+  loadWo(sector, exec_status, nature);
+}
+
+function renderWo() {
+  if (!woData) return;
+  const { summary, records, total, board_total } = woData;
+  document.getElementById('wo-sub').textContent = `${board_total} active and completed projects`;
+  
+  document.getElementById('wo-kpis').innerHTML =
+    kpiCard('kpi-wo-rev', 'Total Contract Value', '0', 'All projects excl. GST') +
+    kpiCard('kpi-wo-ong', 'Ongoing Projects', '0', 'Currently executing') +
+    kpiCard('kpi-wo-cmp', 'Completed', '0', 'Successfully delivered', 'green') +
+    kpiCard('kpi-wo-day', 'Avg Execution', '0', 'Probable duration', 'purple') +
+    kpiCard('kpi-wo-rcv', 'Receivables', '0', 'Outstanding', 'amber') +
+    kpiCard('kpi-wo-bil', 'To Be Billed', '0', 'Pending billing', 'red');
+
+  animateCount(document.getElementById('kpi-wo-rev'), summary.total_revenue, '₹', summary.total_revenue >= 1e7 ? ' Cr' : ' L');
+  animateCount(document.getElementById('kpi-wo-ong'), summary.ongoing, '', '');
+  animateCount(document.getElementById('kpi-wo-cmp'), summary.completed, '', '');
+  animateCount(document.getElementById('kpi-wo-day'), summary.avg_days||0, '', ' days');
+  animateCount(document.getElementById('kpi-wo-rcv'), summary.total_recv, '₹', summary.total_recv >= 1e7 ? ' Cr' : ' L');
+  animateCount(document.getElementById('kpi-wo-bil'), summary.total_tbill, '₹', summary.total_tbill >= 1e7 ? ' Cr' : ' L');
+
+  const start = (woPage-1)*woPerPage;
+  const pageRecs = records.slice(start, start+woPerPage);
+  document.getElementById('wo-tbody').innerHTML = pageRecs.map((r, i) => `
+    <tr onclick="showWoDrawer(${start + i})" title="Click to view details">
+      <td>
+        <div class="deal-name">${r['Deal name masked']||'—'}</div>
+        <div class="deal-sub">${r['Serial #']||''}</div>
+      </td>
+      <td style="font-size:12px;color:#6B7280">${r['Customer Name Code']||'—'}</td>
+      <td>${sectorBadge(r['Sector'])}</td>
+      <td style="font-size:12px">${r['Nature of Work']||'—'}</td>
+      <td>${execBadge(r['Execution Status'])}</td>
+      <td>${invoiceBadge(r['Invoice Status'])}</td>
+      <td class="val-right" style="font-weight:600">${fmtInr(r[AMT_COL])}</td>
+      <td class="val-right" style="font-weight:600">${fmtInr(r[RECV_COL])}</td>
+    </tr>`).join('');
+  paginate(records.length, woPage, woPerPage, 'wo-pagination', 'setWoPage');
+}
+
+function setWoPage(p) { woPage = p; renderWo(); }
+
+// ── LEADERSHIP ────────────────────────────────────────────────────────────────
+async function loadLeadership() {
+  document.getElementById('lead-kpis').innerHTML = `
+    <div class="shimmer shimmer-card" style="flex:1"></div>
+    <div class="shimmer shimmer-card" style="flex:1"></div>
+    <div class="shimmer shimmer-card" style="flex:1"></div>
+    <div class="shimmer shimmer-card" style="flex:1"></div>`;
+  try {
+    const res = await fetch('/api/leadership');
+    const data = await res.json();
+    const k = data.kpis;
+    
+    document.getElementById('lead-kpis').innerHTML =
+      kpiCard('kpi-l-pip', 'Total Pipeline', '0', `${k.open_deals} open · ${k.won_deals} won`) +
+      kpiCard('kpi-l-rev', 'Total Contract Value', '0', 'All work orders', 'green') +
+      kpiCard('kpi-l-gap', 'Execution Gap', '0', 'Amount to be billed', 'amber') +
+      kpiCard('kpi-l-rcv', 'Receivables', '0', 'Outstanding', 'red');
+
+    animateCount(document.getElementById('kpi-l-pip'), k.total_pipeline, '₹', k.total_pipeline >= 1e7 ? ' Cr' : ' L');
+    animateCount(document.getElementById('kpi-l-rev'), k.total_revenue, '₹', k.total_revenue >= 1e7 ? ' Cr' : ' L');
+    animateCount(document.getElementById('kpi-l-gap'), k.exec_gap, '₹', k.exec_gap >= 1e7 ? ' Cr' : ' L');
+    animateCount(document.getElementById('kpi-l-rcv'), k.receivables, '₹', k.receivables >= 1e7 ? ' Cr' : ' L');
+
+    // Cross-board animated chart
+    if (data.cross_chart && data.cross_chart.sectors.length) {
+      const cc = data.cross_chart;
+      Plotly.newPlot('cross-chart', [
+        {name:'Deals Signed', x:cc.sectors, y:cc.deals, type:'bar', marker:{color:'#1E293B'}},
+        {name:'Work Orders Active', x:cc.sectors, y:cc.wo, type:'bar', marker:{color:'#2563EB'}},
+      ], {
+        barmode:'group', paper_bgcolor:'white', plot_bgcolor:'white',
+        margin:{t:10,b:60,l:40,r:10}, height:290,
+        font:{family:'Inter,sans-serif',size:11},
+        legend:{orientation:'h',y:1.08},
+        xaxis:{tickfont:{size:11}}, yaxis:{tickfont:{size:11}},
+        transition:{duration:600, easing:'cubic-in-out'}
+      }, {responsive:true, displayModeBar:false});
+
+      // Click on sector to drill down via chat
+      document.getElementById('cross-chart').on('plotly_click', function(evtData){
+        if (evtData && evtData.points && evtData.points.length) {
+          const sec = evtData.points[0].x;
+          navigate('chat');
+          sendSuggested(`Give me a complete breakdown for the ${sec} sector`);
+        }
+      });
+    }
+
+    // Top sectors
+    if (data.top_sectors && data.top_sectors.length) {
+      document.getElementById('lead-top-sectors').innerHTML =
+        '<div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:8px">&#x1F4B0; Top Sectors — Revenue</div>' +
+        data.top_sectors.map(s =>
+          `<div class="top-sec-item" onclick="navigate('chat');sendSuggested('How is ${s.sector} sector performing?')" style="cursor:pointer" title="Click to ask about this sector">
+            <span class="top-sec-name">${s.sector}</span>
+            <span class="top-sec-val">${s.value_fmt}</span>
+          </div>`
+        ).join('');
+    }
+
+    // Metric cards
+    document.getElementById('lead-metric-cards').innerHTML = `
+      <div class="metric-card">
+        <div class="metric-card-label">Total Contract Value</div>
+        <div class="metric-card-value">${k.total_revenue_fmt}</div>
+        <div class="metric-card-tag metric-green">&#x2191; From Work Orders</div>
+      </div>
+      <div class="metric-card" style="margin-top:10px">
+        <div class="metric-card-label">Execution Gap</div>
+        <div class="metric-card-value">${k.exec_gap_fmt}</div>
+        <div class="metric-card-tag metric-amber">&#x26A0; Amount to be billed</div>
+      </div>
+      <div class="metric-card" style="margin-top:10px">
+        <div class="metric-card-label">Receivables Outstanding</div>
+        <div class="metric-card-value">${k.receivables_fmt}</div>
+        <div class="metric-card-tag metric-gray">Across all sectors</div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('lead-kpis').innerHTML =
+      `<div style="color:#dc2626;padding:20px">Error loading: ${e.message}</div>`;
+  }
+}
+
+async function generateBriefing() {
+  const btn = document.getElementById('gen-btn-text');
+  btn.innerHTML = '<span class="loading-spinner"></span> Synthesizing live data...';
+  document.querySelector('.btn-generate').disabled = true;
+  try {
+    const res = await fetch('/api/leadership/briefing', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: leadSessionId})
+    });
+    const data = await res.json();
+    leadSessionId = data.session_id || leadSessionId;
+    const answer = data.answer || '';
+    document.getElementById('lead-insight-card').innerHTML = `
+      <div class="ai-insight-card" style="box-shadow:0 0 0 2px #2563EB">
+        <div class="ai-insight-head">&#x1F916; AI Executive Summary</div>
+        <div class="ai-insight-body" id="lead-summary-text"></div>
+      </div>`;
+    
+    streamTypewriter('lead-summary-text', answer, () => {
+      fireConfetti();
+    });
+
+    if (data.chart && data.chart.labels && data.chart.labels.length) {
+      const c = data.chart;
+      document.getElementById('lead-briefing-area').insertAdjacentHTML('beforeend',
+        '<div class="white-card" style="margin-top:0"><div id="brief-chart" style="height:260px"></div></div>');
+      const traces = [{x:c.labels, y:c.values, type:'bar', marker:{color:'#2563EB'}}];
+      Plotly.newPlot('brief-chart', traces, {
+        title:{text:c.title,font:{size:13,family:'Inter'}},
+        paper_bgcolor:'white',plot_bgcolor:'white',
+        margin:{t:40,b:60,l:40,r:10},height:260,
+        font:{family:'Inter,sans-serif',size:11},
+        transition:{duration:500, easing:'cubic-in-out'}
+      }, {responsive:true,displayModeBar:false});
+    }
+  } catch(e) {
+    document.getElementById('lead-insight-card').innerHTML =
+      `<div class="ai-insight-card"><div class="ai-insight-head">Error</div><div class="ai-insight-body" style="color:#dc2626">${e.message}</div></div>`;
+  } finally {
+    btn.innerHTML = '&#x1F504; Regenerate Briefing';
+    document.querySelector('.btn-generate').disabled = false;
+  }
+}
+
+// ── CHAT (Streaming Typewriter with Glow Cursor & Follow-up Chips) ────────────
+function appendUserMsg(text) {
+  const el = document.getElementById('chat-messages');
+  el.insertAdjacentHTML('beforeend',
+    `<div class="chat-bubble-user"><div class="bubble">${text}</div></div>`);
+  el.scrollTop = el.scrollHeight;
+}
+
+function generateChipsForQuery(q) {
+  const lq = (q || '').toLowerCase();
+  if (lq.includes('mining')) {
+    return [
+      ['🔍 High-Value Mining Deals', 'Show highest value open deals in Mining'],
+      ['⚙️ Ongoing Mining Projects', 'What is the execution status of ongoing Mining projects?'],
+      ['📊 Compare with Renewables', 'Compare Mining vs Renewables pipeline and revenue']
+    ];
+  } else if (lq.includes('revenue') || lq.includes('bill') || lq.includes('receivable')) {
+    return [
+      ['⚠️ Unpaid Receivables', 'Which sectors have the highest unpaid receivables?'],
+      ['📑 Unbilled Contract Value', 'Show projects where work is ongoing but not billed'],
+      ['🏆 Top Revenue Clients', 'Which clients have generated the most revenue?']
+    ];
+  } else if (lq.includes('lead') || lq.includes('brief')) {
+    return [
+      ['🎯 Top 3 Risks', 'What are the top 3 operational risks Skylark faces right now?'],
+      ['📈 Q4 Outlook', 'What is our projected closure pipeline for upcoming quarters?'],
+      ['💡 Resource Allocation', 'Where should we shift drone operations teams next?']
+    ];
+  } else {
+    return [
+      ['🔍 High-Probability Deals', 'Show all high probability open deals across sectors'],
+      ['💰 Revenue Summary', 'Give me a total revenue summary across all sectors'],
+      ['⚙️ Project Execution Health', 'Are there any delayed or stuck work orders?']
+    ];
+  }
+}
+
+// Word-by-Word Streaming Typewriter with Spark Cursor
+function streamTypewriter(elemId, markdownText, onComplete) {
+  const elem = document.getElementById(elemId);
+  if (!elem) return;
+  
+  const words = (markdownText || 'No response received.').split(' ');
+  let currentWords = [];
+  let index = 0;
+  
+  const interval = setInterval(() => {
+    if (index < words.length) {
+      currentWords.push(words[index]);
+      elem.innerHTML = marked.parse(currentWords.join(' ')) + '<span class="spark-cursor">&#x2728;</span>';
+      index++;
+      const chatArea = document.getElementById('chat-messages');
+      if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+    } else {
+      clearInterval(interval);
+      elem.innerHTML = marked.parse(markdownText || 'No response received.');
+      if (onComplete) onComplete();
+    }
+  }, 22);
+}
+
+function appendAiMsg(answer, chart, originalQuery) {
+  const el = document.getElementById('chat-messages');
+  const chartId = 'chart-' + Date.now();
+  const cardId = 'card-' + Date.now();
+  const chipsId = 'chips-' + Date.now();
+  
+  el.insertAdjacentHTML('beforeend', `
+    <div class="chat-bubble-ai">
+      <div class="ai-avatar">&#x1F681;</div>
+      <div class="ai-content">
+        <div class="ai-card">
+          <div class="ai-text" id="${cardId}"></div>
+          ${chart ? `<div id="${chartId}" style="margin-top:12px;height:260px"></div>` : ''}
+          <div class="followup-chips" id="${chipsId}"></div>
+        </div>
+        <div class="chat-actions">
+          <button class="chat-action-btn" onclick="copyCard('${cardId}')">&#x1F4CB; Copy Text</button>
+        </div>
+      </div>
+    </div>`);
+
+  streamTypewriter(cardId, answer, () => {
+    // Render Follow-up Chips
+    const chips = generateChipsForQuery(originalQuery);
+    const chipsContainer = document.getElementById(chipsId);
+    if (chipsContainer) {
+      chipsContainer.innerHTML = chips.map(([label, q]) =>
+        `<button class="chip-btn" onclick="sendSuggested(\`${q}\`)">${label}</button>`
+      ).join('');
+    }
+  });
+
+  if (chart && chart.labels && chart.labels.length) {
+    const traces = chart.type === 'pie'
+      ? [{labels:chart.labels,values:chart.values,type:'pie'}]
+      : [{x:chart.labels,y:chart.values,type:'bar',marker:{color:'#2563EB'}}];
+    Plotly.newPlot(chartId, traces, {
+      title:{text:chart.title||'Chart',font:{size:12,family:'Inter'}},
+      paper_bgcolor:'white',plot_bgcolor:'white',
+      margin:{t:36,b:36,l:40,r:10},height:260,
+      font:{family:'Inter,sans-serif',size:11},showlegend:chart.type==='pie',
+      transition:{duration:500, easing:'cubic-in-out'}
+    }, {responsive:true,displayModeBar:false});
+  }
+  el.scrollTop = el.scrollHeight;
+}
+
+function copyCard(elemId) {
+  const text = document.getElementById(elemId)?.innerText || '';
+  navigator.clipboard.writeText(text);
+  showToast('Copied to clipboard!');
+}
+
+function appendSkeletonLoader() {
+  const el = document.getElementById('chat-messages');
+  const id = 'typing-' + Date.now();
+  el.insertAdjacentHTML('beforeend', `
+    <div class="chat-bubble-ai" id="${id}">
+      <div class="ai-avatar">&#x1F681;</div>
+      <div class="ai-content">
+        <div class="ai-card">
+          <div class="skeleton-wrap">
+            <div class="shimmer shimmer-line short"></div>
+            <div class="shimmer shimmer-line"></div>
+            <div class="shimmer shimmer-line"></div>
+            <div class="shimmer shimmer-card" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+    </div>`);
+  el.scrollTop = el.scrollHeight;
+  return id;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const suggested = document.getElementById('chat-suggested');
+  if (suggested) suggested.remove();
+  appendUserMsg(msg);
+  const typingId = appendSkeletonLoader();
+  try {
+    const res = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg, session_id: chatSessionId})
+    });
+    const data = await res.json();
+    chatSessionId = data.session_id || chatSessionId;
+    document.getElementById(typingId).remove();
+    appendAiMsg(data.answer, data.chart, msg);
+  } catch(e) {
+    document.getElementById(typingId).remove();
+    appendAiMsg('Error: ' + e.message, null, msg);
+  }
+}
+
+function sendSuggested(q) {
+  document.getElementById('chat-input').value = q;
+  sendChat();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  const el = document.getElementById('chat-date');
+  if (el) el.textContent = 'Today, ' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+});
+</script>
+</body>
+</html>
